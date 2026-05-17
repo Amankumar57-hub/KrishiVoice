@@ -463,12 +463,6 @@ export default function Dashboard() {
               >
                 🚚 Transport Listings ({myTransporters.length})
               </button>
-              <button 
-                onClick={() => setFarmerSubTab('inquiries')} 
-                className={`pb-1.5 px-3 text-sm font-bold border-b-2 transition-all ${farmerSubTab === 'inquiries' ? 'border-sky-500 text-sky-600 font-extrabold shadow-sm' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-              >
-                💬 Buyer Inquiries ({sellerInquiries.length})
-              </button>
             </div>
 
             {/* TAB CONTENT: CROPS */}
@@ -652,105 +646,18 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* TAB CONTENT: INQUIRIES */}
-            {farmerSubTab === 'inquiries' && (
-              <div>
-                {sellerInquiriesLoading ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 size={24} className="animate-spin text-primary" />
-                  </div>
-                ) : sellerInquiries.length === 0 ? (
-                  <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-sm text-gray-500">
-                    No buyer inquiries yet. / अभी कोई खरीदार पूछताछ नहीं है
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {sellerInquiries.map((inquiry) => {
-                      const MethodIcon = contactMethodIcon[inquiry.method] || MessageCircle;
-                      const buyerName = inquiry.buyer?.full_name || inquiry.buyer?.username || 'Buyer';
-                      return (
-                        <div key={inquiry.id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                              <p className="font-bold text-gray-900">{buyerName}</p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {inquiry.listings?.crop_name} ({inquiry.listings?.quantity} {inquiry.listings?.unit})
-                              </p>
-                            </div>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-3 py-1 text-[11px] font-bold text-primary">
-                              <MethodIcon size={12} />
-                              {contactMethodLabel[inquiry.method] || inquiry.method}
-                            </span>
-                          </div>
-
-                          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                            <span>{formatDate(inquiry.created_at)}</span>
-                            {inquiry.buyer?.phone && <a href={`tel:${inquiry.buyer.phone}`} className="font-semibold text-primary hover:underline">Call Buyer</a>}
-                          </div>
-
-                          {inquiry.message && (
-                            <p className="mt-3 rounded-xl bg-gray-50 px-3 py-2 text-sm text-gray-600">
-                              {inquiry.message}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
           </div>
         ) : (
-          <div>
-            {/* Sub Tabs Switcher for Buyer */}
-            <div className="flex border-b border-gray-100 pb-3 mb-6 space-x-6">
-              <button 
-                onClick={() => setBuyerSubTab('inquiries')} 
-                className={`pb-1.5 px-3 text-sm font-bold border-b-2 transition-all ${buyerSubTab === 'inquiries' ? 'border-emerald-500 text-emerald-600 font-extrabold shadow-sm' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-              >
-                🤝 My Inquiries ({buyerInquiries.length})
-              </button>
-            </div>
-
-            {buyerSubTab === 'inquiries' && (
-              <div>
-                {buyerInquiriesLoading ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 size={30} className="animate-spin text-primary" />
-                  </div>
-                ) : buyerInquiries.length === 0 ? (
-                  <div className="flex flex-col items-center py-16 text-center">
-                    <span className="text-5xl mb-4">🤝</span>
-                    <p className="font-bold text-gray-700">No inquiries yet</p>
-                    <p className="text-sm text-gray-400 mt-1">Browse listings and contact farmers</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {buyerInquiries.map(c => {
-                      const MethodIcon = contactMethodIcon[c.method] || MessageCircle;
-                      return (
-                      <div key={c.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <div className="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
-                          <div>
-                            <p className="font-bold text-gray-900">{c.seller?.full_name || c.seller?.username}</p>
-                            <p className="text-xs text-gray-500">{c.listings?.crop_name} ({c.listings?.quantity} {c.listings?.unit})</p>
-                          </div>
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-lg capitalize">
-                            <MethodIcon size={12} />
-                            {contactMethodLabel[c.method] || c.method}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-400 mt-2 px-1">{formatDate(c.created_at)}</p>
-                        {c.message && <p className="text-sm text-gray-600 mt-2 px-1">{c.message}</p>}
-                      </div>
-                    )})}
-                  </div>
-                )}
-              </div>
-            )}
-
+          <div className="flex flex-col items-center py-16 text-center">
+            <span className="text-5xl mb-4">🌾</span>
+            <p className="font-bold text-gray-700">Welcome, Buyer!</p>
+            <p className="text-sm text-gray-400 mt-1">Browse crop listings and find the best deals</p>
+            <button
+              onClick={() => navigate('/search')}
+              className="mt-5 bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors"
+            >
+              Browse Listings
+            </button>
           </div>
         )}
       </main>

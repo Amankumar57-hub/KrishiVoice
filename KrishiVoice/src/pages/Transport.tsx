@@ -37,12 +37,14 @@ export default function Transport() {
         .select('*')
         .order('created_at', { ascending: false });
       if (!error && data) {
-        setTransporters(data.length > 0 ? data : mockTransporters);
+        setTransporters(data); // show only real data, empty array if none
       } else {
-        setTransporters(mockTransporters);
+        console.error('Error loading transporters:', error);
+        setTransporters([]); // show empty state, never fake data
       }
-    } catch {
-      setTransporters(mockTransporters);
+    } catch (err) {
+      console.error('Failed to load transporters:', err);
+      setTransporters([]); // show empty state, never fake data
     }
   };
 
@@ -161,17 +163,21 @@ export default function Transport() {
         photo_url: photoUrl
       };
 
-      // Ensure profile exists for phone-auth users before inserting
-      const { data: profileCheck } = await supabase.from('profiles').select('id').eq('id', user.id).single();
-      if (!profileCheck) {
-        const emailPrefix = user.email ? user.email.split('@')[0] : null;
-        await supabase.from('profiles').insert({
-          id: user.id,
-          email: user.email || '',
-          full_name: user.user_metadata?.full_name || emailPrefix || 'User',
-          username: emailPrefix || `user_${Date.now()}`,
-          role: 'transporter', // defaulting to transporter role
-        });
+      // Best-effort profile upsert — don't let this block transport publish
+      try {
+        const { data: profileCheck } = await supabase.from('profiles').select('id').eq('id', user.id).single();
+        if (!profileCheck) {
+          const emailPrefix = user.email ? user.email.split('@')[0] : null;
+          await supabase.from('profiles').upsert({
+            id: user.id,
+            email: user.email || '',
+            full_name: user.user_metadata?.full_name || emailPrefix || 'User',
+            username: emailPrefix || `user_${Date.now()}`,
+            role: 'transporter',
+          }, { onConflict: 'id' });
+        }
+      } catch (profileErr) {
+        console.warn('Profile check skipped:', profileErr);
       }
 
       let error;
@@ -199,9 +205,10 @@ export default function Transport() {
       setPhotoPreview('');
       setExistingPhotoUrl('');
       fetchData(); // reload
-    } catch (error) {
-      console.error(error);
-      toast.error(editingTransporterId ? "Failed to update. Try again." : "Failed to add transport. Try again.");
+    } catch (error: any) {
+      console.error('Transport save error:', JSON.stringify(error), error);
+      const msg = error?.message || error?.details || error?.hint || 'Unknown error';
+      toast.error(`Failed: ${msg}`);
     } finally {
       setPublishing(false);
     }
@@ -302,7 +309,7 @@ export default function Transport() {
           </div>
         ) : (
           filteredTransporters.map(transporter => (
-            <div key={transporter.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center transition-all hover:shadow-md hover:border-emerald-100">
+            <div key={transporter.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-start transition-all hover:shadow-md hover:border-emerald-100">
               
               {/* Vehicle Photo */}
               <div className="w-full md:w-32 h-24 rounded-xl overflow-hidden mb-4 md:mb-0 md:mr-5 shrink-0 bg-emerald-50 flex items-center justify-center border border-emerald-100">
@@ -313,8 +320,9 @@ export default function Transport() {
                 )}
               </div>
 
-              <div className="flex-1 mb-4 md:mb-0">
-                <div className="flex items-center space-x-2">
+              <div className="flex-1">
+                {/* Name + Verified badge */}
+                <div className="flex items-center space-x-2 mb-2">
                   <h3 className="font-bold text-gray-900 text-lg leading-tight">{transporter.name}</h3>
                   {transporter.verified && (
                     <div className="flex items-center text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-100">
@@ -323,79 +331,97 @@ export default function Transport() {
                     </div>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-2 mt-3">
+
+                {/* Tags: vehicle type, region */}
+                <div className="flex flex-wrap gap-2 mb-3">
                   <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center">
                     🚚 {transporter.vehicle_type || transporter.vehicle || 'Truck'}
                   </span>
                   <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center">
                     📍 {transporter.region}
                   </span>
+                </div>
+
+                {/* Contact Info Panel — always visible to everyone */}
+                <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 space-y-1.5 mb-3">
                   {transporter.address && (
-                    <span className="bg-amber-50 text-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center">
-                      🏙️ {transporter.address}
-                    </span>
+                    <div className="flex items-start gap-2 text-sm text-gray-700">
+                      <MapPin size={14} className="mt-0.5 text-emerald-600 shrink-0" />
+                      <span className="font-medium">{transporter.address}</span>
+                    </div>
+                  )}
+                  {transporter.phone && (
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Phone size={14} className="text-emerald-600 shrink-0" />
+                      <span className="font-semibold tracking-wide">+91 {transporter.phone}</span>
+                    </div>
+                  )}
+                  {transporter.whatsapp && (
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <MessageCircle size={14} className="text-[#25D366] shrink-0" />
+                      <span className="font-semibold tracking-wide">+91 {transporter.whatsapp}</span>
+                    </div>
+                  )}
+                  {transporter.email && (
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Mail size={14} className="text-indigo-500 shrink-0" />
+                      <span className="font-medium">{transporter.email}</span>
+                    </div>
                   )}
                 </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 items-center shrink-0">
-                {transporter.whatsapp ? (
-                  <a
-                    href={`https://wa.me/91${transporter.whatsapp}?text=Hello, I'm interested in your transport services for ${transporter.vehicle_type || transporter.vehicle || 'truck'}.`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex flex-col items-center justify-center bg-[#25D366] bg-opacity-10 py-2 px-3.5 rounded-xl text-[#25D366] hover:bg-opacity-20 transition-colors min-w-[70px]"
-                  >
-                    <MessageCircle size={20} className="mb-1" />
-                    <span className="text-[10px] font-bold">WhatsApp</span>
-                  </a>
-                ) : null}
-                
-                {transporter.phone ? (
-                  <a
-                    href={`tel:+91${transporter.phone}`}
-                    className="flex-1 flex flex-col items-center justify-center bg-emerald-600 bg-opacity-10 py-2 px-3.5 rounded-xl text-emerald-700 hover:bg-opacity-20 transition-colors min-w-[70px]"
-                  >
-                    <Phone size={20} className="mb-1" />
-                    <span className="text-[10px] font-bold">Call</span>
-                  </a>
-                ) : null}
 
-                {transporter.email ? (
-                  <a
-                    href={`mailto:${transporter.email}?subject=KrishiVoice Transport Query`}
-                    className="flex-1 flex flex-col items-center justify-center bg-indigo-50 py-2 px-3.5 rounded-xl text-indigo-700 hover:bg-indigo-100 transition-colors min-w-[70px]"
-                  >
-                    <Mail size={20} className="mb-1" />
-                    <span className="text-[10px] font-bold">Email</span>
-                  </a>
-                ) : null}
-
-                {!transporter.whatsapp && !transporter.phone && !transporter.email && (
-                  <div className="flex-1 flex items-center justify-center py-2 px-4 text-xs font-medium text-gray-400 italic border border-dashed border-gray-200 rounded-xl">
-                    Contact hidden
-                  </div>
-                )}
-
-                {/* Edit & Delete for Owners */}
-                {user && transporter.user_id === user.id && (
-                  <div className="flex flex-col gap-1.5 ml-2">
-                    <button
-                      onClick={() => handleEditClick(transporter)}
-                      className="bg-gray-100 text-gray-700 p-1.5 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
-                      title="Edit Transport"
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2 items-center">
+                  {transporter.whatsapp && (
+                    <a
+                      href={`https://wa.me/91${transporter.whatsapp}?text=Hello ${transporter.name}, I found your transport service on KrishiVoice. I need transport for my crops. Can you help?`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 bg-[#25D366] text-white py-2 px-4 rounded-xl text-xs font-bold hover:bg-[#1ebe59] transition-colors"
                     >
-                      <Edit size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTransporter(transporter.id)}
-                      className="bg-red-50 text-red-600 p-1.5 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center"
-                      title="Delete Transport"
+                      <MessageCircle size={14} />
+                      WhatsApp
+                    </a>
+                  )}
+                  {transporter.phone && (
+                    <a
+                      href={`tel:+91${transporter.phone}`}
+                      className="flex items-center gap-1.5 bg-emerald-600 text-white py-2 px-4 rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors"
                     >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                )}
+                      <Phone size={14} />
+                      Call Now
+                    </a>
+                  )}
+                  {transporter.email && (
+                    <a
+                      href={`mailto:${transporter.email}?subject=KrishiVoice Transport Query`}
+                      className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 py-2 px-4 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors"
+                    >
+                      <Mail size={14} />
+                      Email
+                    </a>
+                  )}
+
+                  {/* Edit & Delete for Owners */}
+                  {user && transporter.user_id === user.id && (
+                    <div className="flex gap-1.5 ml-auto">
+                      <button
+                        onClick={() => handleEditClick(transporter)}
+                        className="bg-gray-100 text-gray-700 p-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                        title="Edit Transport"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTransporter(transporter.id)}
+                        className="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center"
+                        title="Delete Transport"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))
