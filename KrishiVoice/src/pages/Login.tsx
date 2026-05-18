@@ -41,7 +41,7 @@ export default function Login() {
           .eq('id', session.user.id)
           .single();
         if (profileData) {
-          navigate('/dashboard');
+          navigate('/');
         } else {
           navigate('/register/username');
         }

@@ -36,7 +36,7 @@ export default function RegisterUsername() {
 
   useEffect(() => {
     if (!authLoading && profile) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [authLoading, profile, navigate]);
 
@@ -131,7 +131,7 @@ export default function RegisterUsername() {
         setError(upsertError.message);
       } else {
         await refreshProfile();
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (err: any) {
       setError(err?.message || 'Failed to complete profile. Please try again.');
