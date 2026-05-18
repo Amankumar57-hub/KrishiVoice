@@ -21,6 +21,7 @@ import ListingDetail from './pages/ListingDetail';
 import GlobalAssistant from './components/GlobalAssistant';
 import MobileNav from './components/MobileNav';
 import Privacy from './pages/Privacy';
+import MandiAlertsManager from './components/MandiAlertsManager';
 
 
 import AdminLogin from './pages/admin/AdminLogin';
@@ -69,6 +70,7 @@ function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
+          <MandiAlertsManager />
           <GlobalAssistant />
           <MobileNav />
         </div>

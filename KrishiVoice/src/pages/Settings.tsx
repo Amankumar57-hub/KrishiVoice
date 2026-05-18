@@ -36,7 +36,14 @@ export default function Settings() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarUrl, setAvatarUrl]   = useState(null);
   const [theme, setTheme]           = useState(() => localStorage.getItem('krishi_theme') || 'light');
-  const [notifications, setNotifications] = useState({ buyer: true, mandi: false, status: true });
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const saved = localStorage.getItem('krishi_notifications');
+      return saved ? JSON.parse(saved) : { buyer: true, mandi: false, status: true };
+    } catch {
+      return { buyer: true, mandi: false, status: true };
+    }
+  });
   const [toast, setToast]           = useState<any>(null);
   const fileInputRef = useRef(null);
 
@@ -44,23 +51,6 @@ export default function Settings() {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4000);
   };
-
-  useEffect(() => {
-    let interval: any;
-    if (notifications.mandi) {
-      const triggerAlert = () => {
-        const randomCrop = mockMandiPrices[Math.floor(Math.random() * mockMandiPrices.length)];
-        const msg = `Mandi Alert: ${randomCrop.cropHindi || randomCrop.crop} price is ₹${randomCrop.price}/${randomCrop.unit} in ${randomCrop.mandi} (Real-time)`;
-        showToast(msg, 'info');
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification("KrishiVoice Mandi Alert", { body: msg, icon: '/favicon.ico' });
-        }
-      };
-      triggerAlert();
-      interval = setInterval(triggerAlert, 8000);
-    }
-    return () => clearInterval(interval);
-  }, [notifications.mandi]);
 
   // Apply saved theme on mount
   useEffect(() => {
@@ -215,7 +205,11 @@ export default function Settings() {
         Notification.requestPermission();
       }
     }
-    setNotifications(p => ({ ...p, [key]: !p[key] }));
+    setNotifications(p => {
+      const next = { ...p, [key]: !p[key] };
+      localStorage.setItem('krishi_notifications', JSON.stringify(next));
+      return next;
+    });
   };
 
   return (
