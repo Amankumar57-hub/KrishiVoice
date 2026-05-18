@@ -264,9 +264,44 @@ export default function Transport() {
               className="w-full bg-transparent outline-none text-gray-800 text-sm font-medium"
             >
               <option value="All">All Regions / सभी क्षेत्र</option>
+              <option value="Andhra Pradesh">Andhra Pradesh / आंध्र प्रदेश</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh / अरुणाचल प्रदेश</option>
+              <option value="Assam">Assam / असम</option>
               <option value="Bihar">Bihar / बिहार</option>
-              <option value="UP">Uttar Pradesh / उत्तर प्रदेश</option>
-              <option value="MP">Madhya Pradesh / मध्य प्रदेश</option>
+              <option value="Chhattisgarh">Chhattisgarh / छत्तीसगढ़</option>
+              <option value="Goa">Goa / गोवा</option>
+              <option value="Gujarat">Gujarat / गुजरात</option>
+              <option value="Haryana">Haryana / हरियाणा</option>
+              <option value="Himachal Pradesh">Himachal Pradesh / हिमाचल प्रदेश</option>
+              <option value="Jharkhand">Jharkhand / झारखंड</option>
+              <option value="Karnataka">Karnataka / कर्नाटक</option>
+              <option value="Kerala">Kerala / केरल</option>
+              <option value="Madhya Pradesh">Madhya Pradesh / मध्य प्रदेश</option>
+              <option value="Maharashtra">Maharashtra / महाराष्ट्र</option>
+              <option value="Manipur">Manipur / मणिपुर</option>
+              <option value="Meghalaya">Meghalaya / मेघालय</option>
+              <option value="Mizoram">Mizoram / मिज़ोरम</option>
+              <option value="Nagaland">Nagaland / नागालैंड</option>
+              <option value="Odisha">Odisha / ओडिशा</option>
+              <option value="Punjab">Punjab / पंजाब</option>
+              <option value="Rajasthan">Rajasthan / राजस्थान</option>
+              <option value="Sikkim">Sikkim / सिक्किम</option>
+              <option value="Tamil Nadu">Tamil Nadu / तमिल नाडु</option>
+              <option value="Telangana">Telangana / तेलंगाना</option>
+              <option value="Tripura">Tripura / त्रिपुरा</option>
+              <option value="Uttar Pradesh">Uttar Pradesh / उत्तर प्रदेश</option>
+              <option value="Uttarakhand">Uttarakhand / उत्तराखंड</option>
+              <option value="West Bengal">West Bengal / पश्चिम बंगाल</option>
+              <optgroup label="── Union Territories ──">
+                <option value="Andaman and Nicobar Islands">Andaman &amp; Nicobar Islands</option>
+                <option value="Chandigarh">Chandigarh / चंडीगढ़</option>
+                <option value="Dadra and Nagar Haveli">Dadra &amp; Nagar Haveli and Daman &amp; Diu</option>
+                <option value="Delhi">Delhi (NCT) / दिल्ली</option>
+                <option value="Jammu and Kashmir">Jammu &amp; Kashmir / जम्मू और कश्मीर</option>
+                <option value="Ladakh">Ladakh / लद्दाख</option>
+                <option value="Lakshadweep">Lakshadweep / लक्षद्वीप</option>
+                <option value="Puducherry">Puducherry / पुदुच्चेरी</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -532,9 +567,44 @@ export default function Transport() {
                     className="w-full p-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition-all font-medium appearance-none text-gray-900 bg-white"
                   >
                     <option value="">Select State/Region</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh / आंध्र प्रदेश</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh / अरुणाचल प्रदेश</option>
+                    <option value="Assam">Assam / असम</option>
                     <option value="Bihar">Bihar / बिहार</option>
-                    <option value="UP">Uttar Pradesh / उत्तर प्रदेश</option>
-                    <option value="MP">Madhya Pradesh / मध्य प्रदेश</option>
+                    <option value="Chhattisgarh">Chhattisgarh / छत्तीसगढ़</option>
+                    <option value="Goa">Goa / गोवा</option>
+                    <option value="Gujarat">Gujarat / गुजरात</option>
+                    <option value="Haryana">Haryana / हरियाणा</option>
+                    <option value="Himachal Pradesh">Himachal Pradesh / हिमाचल प्रदेश</option>
+                    <option value="Jharkhand">Jharkhand / झारखंड</option>
+                    <option value="Karnataka">Karnataka / कर्नाटक</option>
+                    <option value="Kerala">Kerala / केरल</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh / मध्य प्रदेश</option>
+                    <option value="Maharashtra">Maharashtra / महाराष्ट्र</option>
+                    <option value="Manipur">Manipur / मणिपुर</option>
+                    <option value="Meghalaya">Meghalaya / मेघालय</option>
+                    <option value="Mizoram">Mizoram / मिज़ोरम</option>
+                    <option value="Nagaland">Nagaland / नागालैंड</option>
+                    <option value="Odisha">Odisha / ओडिशा</option>
+                    <option value="Punjab">Punjab / पंजाब</option>
+                    <option value="Rajasthan">Rajasthan / राजस्थान</option>
+                    <option value="Sikkim">Sikkim / सिक्किम</option>
+                    <option value="Tamil Nadu">Tamil Nadu / तमिल नाडु</option>
+                    <option value="Telangana">Telangana / तेलंगाना</option>
+                    <option value="Tripura">Tripura / त्रिपुरा</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh / उत्तर प्रदेश</option>
+                    <option value="Uttarakhand">Uttarakhand / उत्तराखंड</option>
+                    <option value="West Bengal">West Bengal / पश्चिम बंगाल</option>
+                    <optgroup label="── Union Territories ──">
+                      <option value="Andaman and Nicobar Islands">Andaman &amp; Nicobar Islands</option>
+                      <option value="Chandigarh">Chandigarh / चंडीगढ़</option>
+                      <option value="Dadra and Nagar Haveli">Dadra &amp; Nagar Haveli and Daman &amp; Diu</option>
+                      <option value="Delhi">Delhi (NCT) / दिल्ली</option>
+                      <option value="Jammu and Kashmir">Jammu &amp; Kashmir / जम्मू और कश्मीर</option>
+                      <option value="Ladakh">Ladakh / लद्दाख</option>
+                      <option value="Lakshadweep">Lakshadweep / लक्षद्वीप</option>
+                      <option value="Puducherry">Puducherry / पुदुच्चेरी</option>
+                    </optgroup>
                   </select>
                 </div>
                 <div>
