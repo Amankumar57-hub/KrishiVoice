@@ -10,7 +10,6 @@ export default function ContactModal({ isOpen, onClose, listing }) {
   const [sellerProfile, setSellerProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [savingMethod, setSavingMethod] = useState(null);
-  const [callbackMessage, setCallbackMessage] = useState('');
   const [notice, setNotice] = useState(null);
 
   // Fetch the real seller profile from the DB whenever modal opens
@@ -39,15 +38,15 @@ export default function ContactModal({ isOpen, onClose, listing }) {
 
       // Fallback: build from what listing already brought
       setSellerProfile({
-        full_name:  listing.seller || listing.profiles?.full_name || '',
-        username:   listing.profiles?.username || '',
-        phone:      listing.phone      || listing.profiles?.phone    || '',
-        whatsapp:   listing.whatsapp   || listing.profiles?.whatsapp || '',
-        email:      listing.email      || listing.profiles?.email    || '',
-        address:    listing.location   || listing.address            || '',
-        state:      listing.state      || '',
+        full_name: listing.seller || listing.profiles?.full_name || '',
+        username: listing.profiles?.username || '',
+        phone: listing.phone || listing.profiles?.phone || '',
+        whatsapp: listing.whatsapp || listing.profiles?.whatsapp || '',
+        email: listing.email || listing.profiles?.email || '',
+        address: listing.location || listing.address || '',
+        state: listing.state || '',
         avatar_url: listing.profiles?.avatar_url || null,
-        role:       listing.profiles?.role || 'farmer',
+        role: listing.profiles?.role || 'farmer',
       });
       setLoading(false);
     };
@@ -59,32 +58,31 @@ export default function ContactModal({ isOpen, onClose, listing }) {
     if (!isOpen) return;
     // eslint-disable-next-line react-hooks/exhaustive-deps
     setSavingMethod(null);
-    setCallbackMessage('');
     setNotice(null);
   }, [isOpen, listing?.id]);
 
   if (!isOpen || !listing) return null;
 
   // Derived contact info — prefer profile data
-  const name      = sellerProfile?.full_name  || sellerProfile?.username || listing.seller || 'Farmer';
-  const phone     = sellerProfile?.phone     || listing.phone     || '';
-  const whatsapp  = sellerProfile?.whatsapp  || sellerProfile?.phone || listing.phone || '';
-  const email     = sellerProfile?.email     || listing.email     || '';
-  const address   = sellerProfile?.address   || listing.location  || listing.address || '';
-  const state     = sellerProfile?.state     || '';
+  const name = sellerProfile?.full_name || sellerProfile?.username || listing.seller || 'Farmer';
+  const phone = sellerProfile?.phone || listing.phone || '';
+  const whatsapp = sellerProfile?.whatsapp || sellerProfile?.phone || listing.phone || '';
+  const email = sellerProfile?.email || listing.email || '';
+  const address = sellerProfile?.address || listing.location || listing.address || '';
+  const state = sellerProfile?.state || '';
   const avatarUrl = sellerProfile?.avatar_url || null;
 
   // Build tel/wa numbers (strip non-digits, add 91 if needed)
   const cleanPhone = phone.replace(/\D/g, '');
-  const telNumber  = cleanPhone.startsWith('91') ? `+${cleanPhone}` : cleanPhone ? `+91${cleanPhone}` : '';
-  const waNumber   = (() => {
+  const telNumber = cleanPhone.startsWith('91') ? `+${cleanPhone}` : cleanPhone ? `+91${cleanPhone}` : '';
+  const waNumber = (() => {
     const n = whatsapp.replace(/\D/g, '');
     return n.startsWith('91') ? n : n ? `91${n}` : '';
   })();
 
-  const crop  = listing.crop_name || listing.crop || 'Crop';
-  const qty   = listing.quantity  || listing.qty  || '';
-  const unit  = listing.unit      || '';
+  const crop = listing.crop_name || listing.crop || 'Crop';
+  const qty = listing.quantity || listing.qty || '';
+  const unit = listing.unit || '';
   const price = listing.price_per_unit || listing.price || 0;
   const isOwnListing = !!user?.id && user.id === listing.user_id;
   const canSaveInquiry = !!user?.id && !!listing.id && !!listing.user_id && !isOwnListing;
@@ -163,22 +161,12 @@ export default function ContactModal({ isOpen, onClose, listing }) {
           : '✅ Inquiry saved to your dashboard! / पूछताछ सहेजी गई।',
     });
     setSavingMethod(null);
-    
+
     // Auto-close after success if it's a contact method
     if (method === 'phone' || method === 'whatsapp') {
       setTimeout(() => onClose(), 2000);
     }
     return true;
-  };
-
-  const handleCallbackRequest = async () => {
-    const message =
-      callbackMessage.trim() ||
-      `Please call me back about ${crop} (${qty} ${unit}).`;
-    const saved = await saveInquiry('message', message);
-    if (saved) {
-      setCallbackMessage('');
-    }
   };
 
   const handleLoginRedirect = () => {
@@ -418,40 +406,7 @@ export default function ContactModal({ isOpen, onClose, listing }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold text-gray-900">Request Callback</p>
-                <p className="text-xs text-gray-500">कॉलबैक का अनुरोध भेजें</p>
-              </div>
-              {savingMethod === 'message' && (
-                <Loader2 size={16} className="animate-spin text-primary shrink-0" />
-              )}
-            </div>
 
-            <textarea
-              value={callbackMessage}
-              onChange={(e) => setCallbackMessage(e.target.value)}
-              disabled={!canSaveInquiry || savingMethod === 'message'}
-              rows={3}
-              placeholder="Please call me back after 5 PM. / कृपया शाम 5 बजे के बाद कॉल करें।"
-              className="mt-3 w-full rounded-xl border border-gray-200 bg-white p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-sky-100 disabled:bg-gray-100 disabled:text-gray-400"
-            />
-
-            <button
-              onClick={handleCallbackRequest}
-              disabled={!canSaveInquiry || savingMethod === 'message'}
-              className="mt-3 w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-gray-300 transition-colors"
-            >
-              {savingMethod === 'message' ? 'Sending...' : 'Request Callback / कॉलबैक मांगें'}
-            </button>
-
-            {!user && (
-              <p className="mt-2 text-[11px] text-gray-500">
-                Login first to save this request in your dashboard.
-              </p>
-            )}
-          </div>
 
           {/* ── No contact fallback ── */}
           {!phone && !email && !loading && (
