@@ -65,7 +65,7 @@ export default function RegisterUsername() {
 
       if (signUpError) setError(signUpError.message);
       else if (data?.session) setStep('info');
-      else setStep('emailSent');
+      else setStep('verify');
     } catch (err: any) {
       setError(err?.message || 'Action failed. Please try again.');
     } finally {

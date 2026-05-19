@@ -62,7 +62,20 @@ export default function Login() {
         email: email,
         password: password,
       });
-      if (loginError) setError(loginError.message);
+      if (loginError) {
+        if (loginError.message.toLowerCase().includes('email not confirmed')) {
+          await supabase.auth.resend({
+            type: 'signup',
+            email: email,
+            options: {
+              emailRedirectTo: window.location.origin
+            }
+          });
+          setError('Email not confirmed. A new confirmation email has been sent to your inbox.');
+        } else {
+          setError(loginError.message);
+        }
+      }
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err?.message || 'Login failed. Please try again.');
