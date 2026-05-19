@@ -10,10 +10,18 @@ export const LANGUAGE_OPTIONS = [
   { id: 'hi', flag: '🇮🇳', name: 'Hindi', native: 'हिंदी', voiceLocale: 'hi-IN' },
   { id: 'hi-en', flag: '🇮🇳', name: 'Hinglish', native: 'हिंदी-इंग्लिश', voiceLocale: 'hi-IN' },
   { id: 'en', flag: '🇬🇧', name: 'English', native: 'English', voiceLocale: 'en-IN' },
-  { id: 'bh', flag: '🇮🇳', name: 'Bhojpuri', native: 'भोजपुरी', voiceLocale: 'hi-IN' },
+  { id: 'bh', flag: '🇮🇳', name: 'Bhojpuri', native: 'भोजपुरी', voiceLocale: 'bho-IN' },
+  { id: 'mag', flag: '🇮🇳', name: 'Magahi', native: 'मगही', voiceLocale: 'mag-IN' },
+  { id: 'mai', flag: '🇮🇳', name: 'Maithili', native: 'मैथिली', voiceLocale: 'mai-IN' },
   { id: 'ta', flag: '🇮🇳', name: 'Tamil', native: 'தமிழ்', voiceLocale: 'ta-IN' },
   { id: 'mr', flag: '🇮🇳', name: 'Marathi', native: 'मराठी', voiceLocale: 'mr-IN' },
   { id: 'pa', flag: '🇮🇳', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', voiceLocale: 'pa-IN' },
+  { id: 'te', flag: '🇮🇳', name: 'Telugu', native: 'తెలుగు', voiceLocale: 'te-IN' },
+  { id: 'kn', flag: '🇮🇳', name: 'Kannada', native: 'ಕನ್ನಡ', voiceLocale: 'kn-IN' },
+  { id: 'ml', flag: '🇮🇳', name: 'Malayalam', native: 'മലയാളം', voiceLocale: 'ml-IN' },
+  { id: 'bn', flag: '🇮🇳', name: 'Bengali', native: 'বাংলা', voiceLocale: 'bn-IN' },
+  { id: 'gu', flag: '🇮🇳', name: 'Gujarati', native: 'ગુજરાતી', voiceLocale: 'gu-IN' },
+  { id: 'or', flag: '🇮🇳', name: 'Odia', native: 'ଓଡ଼ିଆ', voiceLocale: 'or-IN' },
 ];
 
 const getLanguageOption = (lang) => LANGUAGE_OPTIONS.find((option) => option.id === lang) || LANGUAGE_OPTIONS[0];
