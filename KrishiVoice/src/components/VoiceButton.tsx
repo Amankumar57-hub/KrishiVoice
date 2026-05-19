@@ -95,6 +95,15 @@ const VOICE_LANGUAGES = [
   { id: 'tamil',    code: 'ta-IN', label: 'Tamil',    native: 'தமிழ்',   flag: '🇮🇳' },
   { id: 'marathi',  code: 'mr-IN', label: 'Marathi',  native: 'मराठी',   flag: '🇮🇳' },
   { id: 'punjabi',  code: 'pa-IN', label: 'Punjabi',  native: 'ਪੰਜਾਬੀ',  flag: '🇮🇳' },
+  { id: 'bhojpuri', code: 'bho-IN', label: 'Bhojpuri', native: 'भोजपुरी',  flag: '🇮🇳' },
+  { id: 'magahi',   code: 'mag-IN', label: 'Magahi',   native: 'मगही',   flag: '🇮🇳' },
+  { id: 'maithili', code: 'mai-IN', label: 'Maithili', native: 'मैथिली',   flag: '🇮🇳' },
+  { id: 'telugu',   code: 'te-IN', label: 'Telugu',   native: 'తెలుగు',   flag: '🇮🇳' },
+  { id: 'kannada',  code: 'kn-IN', label: 'Kannada',  native: 'ಕನ್ನಡ',   flag: '🇮🇳' },
+  { id: 'malayalam',code: 'ml-IN', label: 'Malayalam',native: 'മലയാളം',   flag: '🇮🇳' },
+  { id: 'bengali',  code: 'bn-IN', label: 'Bengali',  native: 'বাংলা',   flag: '🇮🇳' },
+  { id: 'gujarati', code: 'gu-IN', label: 'Gujarati', native: 'ગુજરાતી',   flag: '🇮🇳' },
+  { id: 'odia',     code: 'or-IN', label: 'Odia',     native: 'ଓଡ଼ିଆ',   flag: '🇮🇳' },
 ];
 
 // All crops available in LIVE_PRICES, kept in sync automatically
@@ -155,6 +164,15 @@ const VOICE_CODE_TO_PICKER_ID = {
   'ta-IN': 'tamil',
   'mr-IN': 'marathi',
   'pa-IN': 'punjabi',
+  'bho-IN': 'bhojpuri',
+  'mag-IN': 'magahi',
+  'mai-IN': 'maithili',
+  'te-IN': 'telugu',
+  'kn-IN': 'kannada',
+  'ml-IN': 'malayalam',
+  'bn-IN': 'bengali',
+  'gu-IN': 'gujarati',
+  'or-IN': 'odia'
 };
 
 const PICKER_ID_TO_VOICE_CODE = {
@@ -163,6 +181,15 @@ const PICKER_ID_TO_VOICE_CODE = {
   tamil: 'ta-IN',
   marathi: 'mr-IN',
   punjabi: 'pa-IN',
+  bhojpuri: 'bho-IN',
+  magahi: 'mag-IN',
+  maithili: 'mai-IN',
+  telugu: 'te-IN',
+  kannada: 'kn-IN',
+  malayalam: 'ml-IN',
+  bengali: 'bn-IN',
+  gujarati: 'gu-IN',
+  odia: 'or-IN'
 };
 
 

@@ -605,7 +605,19 @@ export function useVoice() {
     const isAndroid = /android/i.test(navigator.userAgent);
 
     const recognition = new SpeechRecognition();
-    recognition.lang = language;
+    
+    // Map known unsupported regional dialects to Hindi for the browser API
+    // Web Speech API often fails on these specific locale codes, but Hindi 
+    // recognition usually understands similar linguistic patterns well enough.
+    const fallbackLangMap = {
+      'bho-IN': 'hi-IN',
+      'mag-IN': 'hi-IN',
+      'mai-IN': 'hi-IN',
+    };
+    
+    // Use mapped language for the API, but keep original language in state
+    recognition.lang = fallbackLangMap[language] || language;
+    
     recognition.interimResults = true;
     // On Android Chrome, continuous=true causes the browser to internally
     // restart recognition sessions and re-fire the same text at new indices,
@@ -675,16 +687,16 @@ export function useVoice() {
         setError('Network error. Please check your internet. / नेटवर्क एरर। इंटरनेट जांचें।');
       } else if (event.error === 'audio-capture') {
         setError('Audio capture failed. Check microphone. / ऑडियो कैप्चर विफल। माइक जांचें।');
-      } else if (event.error === 'language-not-supported') {
-        if (!fallbackAttemptedRef.current && language !== 'en-IN') {
+      } else if (event.error === 'language-not-supported' || event.error === 'service-not-allowed') {
+        if (!fallbackAttemptedRef.current && language !== 'hi-IN') {
+          fallbackAttemptedRef.current = true;
+          setLanguage('hi-IN');
+          setError('Language not supported natively. Trying Hindi. / भाषा समर्थित नहीं। हिंदी में आजमाते हैं।');
+          setTimeout(() => startListening(), 100);
+        } else if (!fallbackAttemptedRef.current && language !== 'en-IN') {
           fallbackAttemptedRef.current = true;
           setLanguage('en-IN');
           setError('Language not supported. Trying English. / भाषा समर्थित नहीं। अंग्रेजी आजमाते हैं।');
-          setTimeout(() => startListening(), 100);
-        } else if (!fallbackAttemptedRef.current && language !== 'hi-IN') {
-          fallbackAttemptedRef.current = true;
-          setLanguage('hi-IN');
-          setError('Language not supported. Trying Hindi. / भाषा समर्थित नहीं। हिंदी आजमाते हैं।');
           setTimeout(() => startListening(), 100);
         } else {
           setError('Language not supported. / भाषा समर्थित नहीं।');
