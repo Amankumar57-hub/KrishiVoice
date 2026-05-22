@@ -14,6 +14,7 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import RegisterUsername from './pages/RegisterUsername';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import AddListing from './pages/AddListing';
 import Profile from './pages/Profile';
@@ -46,6 +47,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/register/username" element={<RegisterUsername />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/listing/:id" element={<ListingDetail />} />
               <Route path="/privacy" element={<Privacy />} />
 

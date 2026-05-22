@@ -144,7 +144,12 @@ export default function Login() {
               placeholder="example@email.com"
             />
             <div className="mt-4">
-              <label className="block text-sm font-semibold text-gray-800">Password <span className="text-xs text-gray-400 font-normal">/ पासवर्ड</span></label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-sm font-semibold text-gray-800">Password <span className="text-xs text-gray-400 font-normal">/ पासवर्ड</span></label>
+                <Link to="/forgot-password" className="text-xs font-bold text-primary hover:text-sky-600 transition-colors">
+                  Forgot Password?
+                </Link>
+              </div>
               <input
                 type="password"
                 required
