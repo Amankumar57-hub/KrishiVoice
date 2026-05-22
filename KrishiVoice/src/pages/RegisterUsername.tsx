@@ -11,6 +11,8 @@ export default function RegisterUsername() {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   // Derive initial data from nav state or user session
   const [localFormData, setLocalFormData] = useState(() => {
@@ -52,10 +54,11 @@ export default function RegisterUsername() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setResendMessage(null);
 
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: localFormData.email,
+        email: localFormData.email.trim(),
         password: localFormData.password,
         options: { 
           data: { full_name: localFormData.fullName },
@@ -63,9 +66,15 @@ export default function RegisterUsername() {
         }
       });
 
-      if (signUpError) setError(signUpError.message);
-      else if (data?.session) setStep('info');
-      else setStep('verify');
+      if (signUpError) {
+        setError(signUpError.message);
+      } else if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        setError('An account with this email already exists. Please log in.');
+      } else if (data?.session) {
+        setStep('info');
+      } else {
+        setStep('verify');
+      }
     } catch (err: any) {
       setError(err?.message || 'Action failed. Please try again.');
     } finally {
@@ -80,9 +89,9 @@ export default function RegisterUsername() {
 
     try {
       const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: localFormData.email,
+        email: localFormData.email.trim(),
         token: otp,
-        type: 'email',
+        type: 'signup',
       });
 
       if (verifyError) {
@@ -94,6 +103,30 @@ export default function RegisterUsername() {
       setError(err?.message || 'Verification failed. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setError(null);
+    setResendMessage(null);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: localFormData.email.trim(),
+        options: {
+          emailRedirectTo: window.location.origin
+        }
+      });
+      if (error) {
+        setError(error.message);
+      } else {
+        setResendMessage('A new OTP has been sent to your email.');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to resend OTP.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -236,7 +269,18 @@ export default function RegisterUsername() {
                 placeholder="123456"
                 maxLength={6}
               />
-              <p className="text-[10px] text-gray-400 mt-1">Enter the 6-digit OTP sent to your email</p>
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-[10px] text-gray-400">Enter the 6-digit OTP sent to your email</p>
+                <button 
+                  type="button" 
+                  onClick={handleResendOtp} 
+                  disabled={resendLoading}
+                  className="text-[10px] font-bold text-primary hover:underline disabled:text-gray-400"
+                >
+                  {resendLoading ? 'Sending...' : 'Resend OTP'}
+                </button>
+              </div>
+              {resendMessage && <p className="text-[10px] text-green-600 mt-1">{resendMessage}</p>}
             </div>
           )}
 
