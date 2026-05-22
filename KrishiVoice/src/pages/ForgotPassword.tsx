@@ -50,15 +50,34 @@ export default function ForgotPassword() {
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!password || password.length < 6) return;
+    
     setLoading(true);
     setError(null);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      // Use a timeout to prevent infinite hanging
+      const updatePromise = supabase.auth.updateUser({ password });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Update request timed out')), 10000)
+      );
+      
+      const { error } = await Promise.race([updatePromise, timeoutPromise]) as any;
+      
       if (error) throw error;
-      navigate('/'); // Go to home/dashboard since they are now logged in
+      
+      setResendMessage('Password updated successfully! Redirecting to login...');
+      // Ensure we clear out the form
+      setPassword('');
+      
+      // Sign out to force the user to log in with their new password cleanly
+      await supabase.auth.signOut();
+      
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1500);
     } catch (err: any) {
-      setError(err?.message || 'Failed to update password.');
-    } finally {
+      console.error('Password update error:', err);
+      setError(err?.message || 'Failed to update password. Please try again.');
       setLoading(false);
     }
   };
