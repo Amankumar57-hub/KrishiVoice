@@ -57,12 +57,10 @@ export default function RegisterUsername() {
     setResendMessage(null);
 
     try {
-      // Use signInWithOtp to ensure a 6-digit OTP is sent (via the magic link template)
-      // signUp sends a confirmation link by default which doesn't contain the OTP token.
-      const { error: signUpError } = await supabase.auth.signInWithOtp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: localFormData.email.trim(),
+        password: localFormData.password,
         options: { 
-          shouldCreateUser: true,
           data: { full_name: localFormData.fullName },
           emailRedirectTo: window.location.origin
         }
@@ -70,6 +68,8 @@ export default function RegisterUsername() {
 
       if (signUpError) {
         setError(signUpError.message);
+      } else if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        setError('An account with this email already exists. Please log in.');
       } else {
         setStep('verify');
       }
@@ -86,23 +86,15 @@ export default function RegisterUsername() {
     setError(null);
 
     try {
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      const { error: verifyError } = await supabase.auth.verifyOtp({
         email: localFormData.email.trim(),
         token: otp,
-        type: 'email', // Magic link / OTP signups use type 'email'
+        type: 'signup',
       });
 
       if (verifyError) {
         setError(verifyError.message);
       } else {
-        // If it's a new user (created recently), set their password now that email is verified
-        if (data?.user && localFormData.password) {
-          const createdAt = new Date(data.user.created_at).getTime();
-          const isNewUser = (Date.now() - createdAt) < 5 * 60 * 1000; // 5 minutes
-          if (isNewUser) {
-            await supabase.auth.updateUser({ password: localFormData.password });
-          }
-        }
         setStep('info');
       }
     } catch (err: any) {
@@ -117,10 +109,10 @@ export default function RegisterUsername() {
     setError(null);
     setResendMessage(null);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
         email: localFormData.email.trim(),
         options: {
-          shouldCreateUser: true,
           emailRedirectTo: window.location.origin
         }
       });
