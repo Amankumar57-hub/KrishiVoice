@@ -32,13 +32,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // ── Supabase Auth Listener ──
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, s) => {
+      (_event, s) => {
         setSession(s);
         const u = s?.user ?? null;
         if (u) {
           setUser(u);
           userIdRef.current = u.id;
-          await fetchProfile(u.id);
+          // Do not await Supabase calls inside this listener to prevent deadlocks (e.g. during updateUser)
+          fetchProfile(u.id).finally(() => setLoading(false));
+        } else {
+          setUser(null);
+          userIdRef.current = null;
           setLoading(false);
         }
       }
