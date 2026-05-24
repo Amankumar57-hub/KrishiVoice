@@ -55,25 +55,18 @@ export default function ForgotPassword() {
     setLoading(true);
     setError(null);
     try {
-      // Use a timeout to prevent infinite hanging
-      const updatePromise = supabase.auth.updateUser({ password });
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Update request timed out')), 10000)
-      );
-      
-      const { error } = await Promise.race([updatePromise, timeoutPromise]) as any;
+      const { data, error } = await supabase.auth.updateUser({ password });
       
       if (error) throw error;
       
       setResendMessage('Password updated successfully! Redirecting to login...');
-      // Ensure we clear out the form
       setPassword('');
       
-      // Sign out to force the user to log in with their new password cleanly
-      await supabase.auth.signOut();
+      // Do not await signOut as it can sometimes hang the UI indefinitely
+      supabase.auth.signOut().catch((err) => console.error('SignOut error:', err));
       
       setTimeout(() => {
-        window.location.href = '/login';
+        navigate('/login', { replace: true });
       }, 1500);
     } catch (err: any) {
       console.error('Password update error:', err);
