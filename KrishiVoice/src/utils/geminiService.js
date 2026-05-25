@@ -13,7 +13,7 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // Pollinations models to try in order (fallback chain)
-const POLLINATIONS_MODELS = ['openai', 'openai-fast', 'mistral'];
+const POLLINATIONS_MODELS = ['openai-fast', 'openai', 'mistral'];
 
 // Strings that indicate the API returned a notice instead of an answer
 const BAD_RESPONSE_PATTERNS = [
@@ -35,6 +35,14 @@ const LANG_INSTRUCTION = {
   'mr-IN':  'कृपया संपूर्णपणे मराठीत उत्तर द्या. आदरपूर्वक शब्द वापरा जसे की जी, आपण.',
   'pa-IN':  'ਕਿਰਪਾ ਕਰਕੇ ਪੂਰੀ ਤਰ੍ਹਾਂ ਪੰਜਾਬੀ ਵਿੱਚ ਜਵਾਬ ਦਿਓ। ਸਤਿਕਾਰਯੋਗ ਸ਼ਬਦ ਵਰਤੋ।',
   'bh':     'कृपया पूरा जवाब भोजपुरी में दीं। मीठा और आदरपूर्ण ढंग से बात करीं।',
+  'bn':     'অনুগ্রহ করে সম্পূর্ণ বাংলায় উত্তর দিন। শ্রদ্ধাশীল শব্দ ব্যবহার করুন।',
+  'te':     'దయచేసి పూర్తిగా తెలుగులో సమాధానం ఇవ్వండి. గౌరవప్రదమైన పదాలను ఉపయోగించండి.',
+  'kn':     'ದಯವಿಟ್ಟು ಸಂಪೂರ್ಣವಾಗಿ ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ. ಗೌರವಾನ್ವಿತ ಪದಗಳನ್ನು ಬಳಸಿ.',
+  'ml':     'ദയവായി പൂർണ്ണമായും മലയാളത്തിൽ മറുപടി നൽകുക. ബഹുമാനമുള്ള വാക്കുകൾ ഉപയോഗിക്കുക.',
+  'gu':     'કૃપા કરીને સંપૂર્ણપણે ગુજરાતીમાં જવાબ આપો. આદરણીય શબ્દોનો ઉપયોગ કરો.',
+  'or':     'ଦୟାକରି ସମ୍ପୂର୍ଣ୍ଣ ରୂପେ ଓଡ଼ିଆରେ ଉତ୍ତର ଦିଅନ୍ତୁ। ସମ୍ମାନଜନକ ଶବ୍ଦ ବ୍ୟବହାର କରନ୍ତୁ।',
+  'mag':    'कृपया पूरा जवाब मगही में दीं। मीठा और आदरपूर्ण ढंग से बात करीं।',
+  'mai':    'कृपया पूरा जवाब मैथिली में दीं। मीठा और आदरपूर्ण ढंग से बात करीं।',
 };
 
 const SYSTEM_CONTEXT = `CRITICAL MANDATORY RULE: YOU MUST SPEAK IN THE EXACT SAME LANGUAGE THE USER SPOKE TO YOU IN. 
@@ -230,7 +238,6 @@ export async function askGemini(prompt, isHindi = false, voiceLocale = 'hi-IN', 
     console.warn('All Pollinations models also failed:', err.message);
   }
 
-  // ── Attempt 3: Graceful offline message in the user's language
   const offlineMessages = {
     'hi-IN': 'जी, इस समय सेवा उपलब्ध नहीं है। कृपया थोड़ी देर बाद दोबारा पूछें।',
     'en-IN': 'I am unable to respond right now. Please try again in a moment.',
@@ -238,6 +245,14 @@ export async function askGemini(prompt, isHindi = false, voiceLocale = 'hi-IN', 
     'mr-IN': 'जी, सध्या सेवा उपलब्ध नाही. कृपया थोड्या वेळाने पुन्हा विचारा.',
     'pa-IN': 'ਹੁਣੇ ਸੇਵਾ ਉਪਲਬਧ ਨਹੀਂ। ਕਿਰਪਾ ਕਰਕੇ ਥੋੜੀ ਦੇਰ ਬਾਅਦ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
     'bh':    'जी, अभी सेवा उपलब्ध नइखे। थोड़ा देर बाद कोशिश करीं।',
+    'bn':    'এই মুহূর্তে পরিষেবা উপলব্ধ নয়। অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।',
+    'te':    'ప్రస్తుతం సేవ అందుబాటులో లేదు. దయచేసి కాసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.',
+    'kn':    'ಪ್ರಸ್ತುತ ಸೇವೆ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    'ml':    'നിലവിൽ സേവനം ലഭ്യമല്ല. അല്പസമയത്തിനുശേഷം വീണ്ടും ശ്രമിക്കുക.',
+    'gu':    'હાલમાં સેવા ઉપલબ્ધ નથી. કૃપા કરીને થોડા સમય પછી ફરી પ્રયાસ કરો.',
+    'or':    'ବର୍ତ୍ତମାନ ସେବା ଉପଲବ୍ଧ ନାହିଁ। ଦୟାକରି କିଛି ସମୟ ପରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ।',
+    'mag':   'जी, अभी सेवा उपलब्ध नइखे। थोड़ा देर बाद कोशिश करीं।',
+    'mai':   'जी, अखन सेवा उपलब्ध नहि अछि। किछु काल बाद धरि फेर सँ प्रयास करू।',
   };
 
   const langKey = uiLang === 'bh' ? 'bh' : (voiceLocale || 'hi-IN');

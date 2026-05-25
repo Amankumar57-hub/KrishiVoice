@@ -191,9 +191,11 @@ export default function Settings() {
     }
   };
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/login');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = () => {
+    setIsLoggingOut(true);
+    signOut(); // signOut now handles redirect via window.location.href
   };
 
   const displayName     = profile?.full_name || profile?.username || user?.email || 'User';
@@ -456,11 +458,12 @@ export default function Settings() {
         {/* ── Logout ── */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-4 p-5 rounded-2xl border border-red-200/50 bg-red-500/10 backdrop-blur-sm text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-95"
+          disabled={isLoggingOut}
+          className={`w-full flex items-center justify-center gap-4 p-5 rounded-2xl border transition-all shadow-lg active:scale-95 ${isLoggingOut ? 'bg-gray-200 border-gray-300 text-gray-500 cursor-not-allowed' : 'border-red-200/50 bg-red-500/10 backdrop-blur-sm text-red-600 hover:bg-red-500 hover:text-white'}`}
         >
-          <LogOut size={20} />
+          {isLoggingOut ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
           <div className="text-left">
-            <span className="font-black block text-sm uppercase tracking-wider">{t('settings.logout')}</span>
+            <span className="font-black block text-sm uppercase tracking-wider">{isLoggingOut ? 'Logging out...' : t('settings.logout')}</span>
             <span className="text-[9px] font-bold opacity-70 tracking-widest">{t('settings.logoutHi')}</span>
           </div>
         </button>

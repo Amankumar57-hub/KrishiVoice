@@ -83,22 +83,35 @@ export function AuthProvider({ children }) {
     };
   }, [fetchProfile]);
 
+  const isSigningOut = useRef(false);
+
   const signOut = async () => {
+    if (isSigningOut.current) return;
+    isSigningOut.current = true;
     try {
-      await Promise.race([
-        Promise.all([
-          supabase.auth.signOut().catch(() => {}),
-          firebaseSignOut(firebaseAuth).catch(() => {})
-        ]),
-        new Promise(resolve => setTimeout(resolve, 2000))
-      ]);
-    } catch (err) {
-      console.error('SignOut error:', err);
-    } finally {
+      // Clear state immediately so UI updates
       setUser(null);
       setSession(null);
       setProfile(null);
       userIdRef.current = null;
+
+      // Clear all auth-related localStorage
+      localStorage.removeItem('krishi_ui_language');
+      
+      // Fire-and-forget sign out calls with a hard timeout
+      await Promise.race([
+        Promise.allSettled([
+          supabase.auth.signOut().catch(() => {}),
+          firebaseSignOut(firebaseAuth).catch(() => {}),
+        ]),
+        new Promise(resolve => setTimeout(resolve, 1500)),
+      ]);
+    } catch (err) {
+      console.error('SignOut error:', err);
+    } finally {
+      isSigningOut.current = false;
+      // Hard redirect as a safety net to ensure we leave the page
+      window.location.href = '/login';
     }
   };
 

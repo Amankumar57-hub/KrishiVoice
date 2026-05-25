@@ -23,7 +23,11 @@ export default function ForgotPassword() {
       if (error) throw error;
       setStep('otp');
     } catch (err: any) {
-      setError(err?.message || 'Failed to send OTP.');
+      if (err?.message?.toLowerCase().includes('rate limit') || err?.message?.toLowerCase().includes('sending limit')) {
+        setError('Email sending limit reached. This is a Supabase free-tier restriction. Please wait 1 hour or configure a custom SMTP provider in the Supabase Dashboard.');
+      } else {
+        setError(err?.message || 'Failed to send OTP.');
+      }
     } finally {
       setLoading(false);
     }
@@ -55,18 +59,25 @@ export default function ForgotPassword() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.auth.updateUser({ password });
+      // Add a timeout to prevent infinite hang
+      const updatePromise = supabase.auth.updateUser({ password });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 15000)
+      );
+      
+      const { error } = await Promise.race([updatePromise, timeoutPromise]) as any;
       
       if (error) throw error;
       
-      setResendMessage('Password updated successfully! Redirecting to login...');
+      setLoading(false);
+      setResendMessage('✅ Password updated successfully! Redirecting to login...');
       setPassword('');
       
-      // Do not await signOut as it can sometimes hang the UI indefinitely
-      supabase.auth.signOut().catch((err) => console.error('SignOut error:', err));
+      // Sign out and redirect - fire and forget, don't await
+      supabase.auth.signOut().catch(() => {});
       
       setTimeout(() => {
-        navigate('/login', { replace: true });
+        window.location.href = '/login';
       }, 1500);
     } catch (err: any) {
       console.error('Password update error:', err);
