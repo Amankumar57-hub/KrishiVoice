@@ -38,8 +38,10 @@ export function AuthProvider({ children }) {
         if (u) {
           setUser(u);
           userIdRef.current = u.id;
-          // Do not await Supabase calls inside this listener to prevent deadlocks (e.g. during updateUser)
-          fetchProfile(u.id).finally(() => setLoading(false));
+          // Defer fetchProfile to the next tick to completely avoid Supabase auth deadlocks
+          setTimeout(() => {
+            fetchProfile(u.id).finally(() => setLoading(false));
+          }, 0);
         } else {
           setUser(null);
           userIdRef.current = null;
@@ -82,14 +84,22 @@ export function AuthProvider({ children }) {
   }, [fetchProfile]);
 
   const signOut = async () => {
-    await Promise.all([
-      supabase.auth.signOut(),
-      firebaseSignOut(firebaseAuth)
-    ]);
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    userIdRef.current = null;
+    try {
+      await Promise.race([
+        Promise.all([
+          supabase.auth.signOut().catch(() => {}),
+          firebaseSignOut(firebaseAuth).catch(() => {})
+        ]),
+        new Promise(resolve => setTimeout(resolve, 2000))
+      ]);
+    } catch (err) {
+      console.error('SignOut error:', err);
+    } finally {
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      userIdRef.current = null;
+    }
   };
 
   // Always use the latest user ID via ref to prevent stale closure issues
