@@ -19,6 +19,20 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      window.addEventListener('error', function(event) {
+        var errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'color: white; background: red; padding: 20px; font-family: sans-serif; position: fixed; top: 0; left: 0; right: 0; z-index: 9999; word-wrap: break-word;';
+        errorDiv.innerHTML = '<strong>App Error:</strong> ' + event.message + '<br><br>File: ' + event.filename + ':' + event.lineno;
+        document.body.appendChild(errorDiv);
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        var errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'color: white; background: darkred; padding: 20px; font-family: sans-serif; position: fixed; top: 0; left: 0; right: 0; z-index: 9999; word-wrap: break-word;';
+        errorDiv.innerHTML = '<strong>Unhandled Promise:</strong> ' + (event.reason ? event.reason.message || event.reason : 'Unknown reason');
+        document.body.appendChild(errorDiv);
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
