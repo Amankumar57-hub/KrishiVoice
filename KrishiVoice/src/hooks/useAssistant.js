@@ -857,32 +857,99 @@ const LISTING_KEYS = ['bech', 'बेच', 'sell', 'listing', 'list', 'publish',
 const TRANSPORT_KEYS = ['transport', 'truck', 'gaadi', 'gadi', 'pickup', 'ट्रक', 'गाड़ी'];
 const SEARCH_KEYS = ['search', 'khoj', 'खोज', 'buy', 'खरीद'];
 
+// ── AI conversation language switch map ────────────────────────────────────────
+// Maps trigger phrases → { lang, locale, label } for "speak in X" commands.
+const LANGUAGE_SWITCH_MAP = [
+  { patterns: ['speak english', 'talk english', 'talk to me in english', 'speak in english', 'reply in english', 'answer in english', 'english mein baat', 'english mein bolo', 'english me baat', 'switch to english', 'use english', 'in english please', 'english please'], lang: 'en', locale: 'en-IN', label: 'English', ack: 'Sure! I will now speak to you in English.' },
+  { patterns: ['hindi mein baat', 'hindi mein bolo', 'hindi me baat', 'speak hindi', 'talk hindi', 'talk to me in hindi', 'speak in hindi', 'reply in hindi', 'switch to hindi', 'hindi please', 'hindi mein bol'], lang: 'hi', locale: 'hi-IN', label: 'Hindi', ack: 'जी, अब मैं हिंदी में बात करूँगी।' },
+  { patterns: ['bengali mein baat', 'bengali mein bolo', 'speak bengali', 'talk bengali', 'talk to me in bengali', 'speak in bengali', 'reply in bengali', 'switch to bengali', 'bangla mein baat', 'bangla mein bolo'], lang: 'bn', locale: 'bn-IN', label: 'Bengali', ack: 'ঠিক আছে! আমি এখন বাংলায় কথা বলব।' },
+  { patterns: ['punjabi mein baat', 'punjabi mein bolo', 'speak punjabi', 'talk punjabi', 'talk to me in punjabi', 'speak in punjabi', 'reply in punjabi', 'switch to punjabi', 'panjabi mein baat'], lang: 'pa', locale: 'pa-IN', label: 'Punjabi', ack: 'ਜੀ, ਹੁਣ ਮੈਂ ਪੰਜਾਬੀ ਵਿੱਚ ਗੱਲ ਕਰਾਂਗੀ।' },
+  { patterns: ['marathi mein baat', 'marathi mein bolo', 'speak marathi', 'talk marathi', 'talk to me in marathi', 'speak in marathi', 'reply in marathi', 'switch to marathi', 'marathit bola'], lang: 'mr', locale: 'mr-IN', label: 'Marathi', ack: 'जी, आता मी मराठीत बोलेन।' },
+  { patterns: ['tamil mein baat', 'tamil mein bolo', 'speak tamil', 'talk tamil', 'talk to me in tamil', 'speak in tamil', 'reply in tamil', 'switch to tamil', 'tamizh mein baat'], lang: 'ta', locale: 'ta-IN', label: 'Tamil', ack: 'சரி! இனி நான் தமிழில் பேசுவேன்.' },
+  { patterns: ['telugu mein baat', 'telugu mein bolo', 'speak telugu', 'talk telugu', 'talk to me in telugu', 'speak in telugu', 'reply in telugu', 'switch to telugu'], lang: 'te', locale: 'te-IN', label: 'Telugu', ack: 'సరే! నేను ఇప్పుడు తెలుగులో మాట్లాడతాను.' },
+  { patterns: ['kannada mein baat', 'kannada mein bolo', 'speak kannada', 'talk kannada', 'talk to me in kannada', 'speak in kannada', 'reply in kannada', 'switch to kannada'], lang: 'kn', locale: 'kn-IN', label: 'Kannada', ack: 'ಸರಿ! ನಾನು ಈಗ ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡುತ್ತೇನೆ.' },
+  { patterns: ['gujarati mein baat', 'gujarati mein bolo', 'speak gujarati', 'talk gujarati', 'talk to me in gujarati', 'speak in gujarati', 'reply in gujarati', 'switch to gujarati'], lang: 'gu', locale: 'gu-IN', label: 'Gujarati', ack: 'ઠીક છે! હું હવે ગુજરાતીમાં વાત કરીશ.' },
+  { patterns: ['bhojpuri mein baat', 'bhojpuri mein bolo', 'speak bhojpuri', 'talk bhojpuri', 'talk to me in bhojpuri', 'speak in bhojpuri', 'reply in bhojpuri', 'switch to bhojpuri'], lang: 'bh', locale: 'hi-IN', label: 'Bhojpuri', ack: 'ठीक बा! अब हम भोजपुरी में बात करब।' },
+];
+
+/**
+ * Detect if the user is explicitly requesting a language switch.
+ * Returns the matching entry from LANGUAGE_SWITCH_MAP or null.
+ */
+const detectLanguageSwitchIntent = (transcript) => {
+  const lower = normalizeText(transcript);
+  for (const entry of LANGUAGE_SWITCH_MAP) {
+    if (entry.patterns.some((p) => lower.includes(p))) {
+      return entry;
+    }
+  }
+  return null;
+};
+
+/**
+ * Determines the language to reply in.
+ * Priority order:
+ *  1. An explicit AI conversation language stored in localStorage ('krishi_ai_lang')
+ *  2. Script-based detection from the transcript
+ *  3. Keyword-based Hindi/Hinglish detection
+ *  4. The user's configured UI/voice language
+ */
 const detectReplyMode = (transcript, voiceLocale, uiLang) => {
+  // 1. Check for a persisted AI conversation language (set by language switch commands)
+  const aiLang = localStorage.getItem('krishi_ai_lang');
+  if (aiLang) {
+    const entry = LANGUAGE_SWITCH_MAP.find((e) => e.lang === aiLang);
+    if (entry) return { lang: entry.lang, locale: entry.locale, uiLang: entry.lang };
+    // Fallback entries not in map
+    if (aiLang === 'en') return { lang: 'en', locale: 'en-IN', uiLang: 'en' };
+    if (aiLang === 'hi') return { lang: 'hi', locale: 'hi-IN', uiLang: 'hi' };
+  }
+
   const lower = normalizeText(transcript);
 
-  // Script-based detection (most reliable)
-  const hasTamil   = /[\u0B80-\u0BFF]/.test(transcript);
-  const hasPunjabi  = /[\u0A00-\u0A7F]/.test(transcript);
+  // 2. Script-based detection (most reliable)
+  const hasTamil      = /[\u0B80-\u0BFF]/.test(transcript);
+  const hasPunjabi    = /[\u0A00-\u0A7F]/.test(transcript);
   const hasDevanagari = /[\u0900-\u097F]/.test(transcript); // Hindi + Marathi + Bhojpuri
+  const hasBengali    = /[\u0980-\u09FF]/.test(transcript);
+  const hasTelugu     = /[\u0C00-\u0C7F]/.test(transcript);
+  const hasKannada    = /[\u0C80-\u0CFF]/.test(transcript);
+  const hasGujarati   = /[\u0A80-\u0AFF]/.test(transcript);
+  const hasMalayalam  = /[\u0D00-\u0D7F]/.test(transcript);
 
-  if (hasTamil)   return { lang: 'ta', locale: 'ta-IN', uiLang: 'ta' };
-  if (hasPunjabi)  return { lang: 'pa', locale: 'pa-IN', uiLang: 'pa' };
+  if (hasTamil)      return { lang: 'ta', locale: 'ta-IN', uiLang: 'ta' };
+  if (hasPunjabi)    return { lang: 'pa', locale: 'pa-IN', uiLang: 'pa' };
+  if (hasBengali)    return { lang: 'bn', locale: 'bn-IN', uiLang: 'bn' };
+  if (hasTelugu)     return { lang: 'te', locale: 'te-IN', uiLang: 'te' };
+  if (hasKannada)    return { lang: 'kn', locale: 'kn-IN', uiLang: 'kn' };
+  if (hasGujarati)   return { lang: 'gu', locale: 'gu-IN', uiLang: 'gu' };
+  if (hasMalayalam)  return { lang: 'ml', locale: 'ml-IN', uiLang: 'ml' };
 
-  // Devanagari could be Hindi, Marathi, or Bhojpuri — use voiceLocale to distinguish
+  // Devanagari could be Hindi, Marathi, or Bhojpuri — use voiceLocale/uiLang to distinguish
   if (hasDevanagari) {
     if (voiceLocale === 'mr-IN' || uiLang === 'mr') return { lang: 'mr', locale: 'mr-IN', uiLang: 'mr' };
     if (uiLang === 'bh') return { lang: 'bh', locale: 'hi-IN', uiLang: 'bh' };
     return { lang: 'hi', locale: 'hi-IN', uiLang: uiLang || 'hi' };
   }
 
-  // Keyword-based Hindi/Hinglish detection
+  // 3. If the text is purely Latin, treat it as English unless UI lang says otherwise
+  const isPurelyLatin = /^[a-zA-Z0-9\s.,!?'-]+$/.test(transcript.trim());
+  if (isPurelyLatin && transcript.trim().length > 0) {
+    // Only override to English if no Hinglish keywords detected
+    const looksHinglish = /(mujhe|mera|meri|bhav|aaj|dikhao|chahiye|kaise|mandi|karo|bolo|dijiye|kholo|batao|jankari)/i.test(lower);
+    if (!looksHinglish) {
+      return { lang: 'en', locale: 'en-IN', uiLang: 'en' };
+    }
+  }
+
+  // 4. Keyword-based Hindi/Hinglish detection
   const looksHindi = /(mujhe|mera|meri|bhav|aaj|dikhao|chahiye|kaise|kya|mandi|karo|bolo|dijiye|kholo|batao|setting|kare|jankari)/i.test(lower);
   if (looksHindi) {
     const isHinglish = uiLang === 'hi-en';
     return { lang: isHinglish ? 'hi-en' : 'hi', locale: 'hi-IN', uiLang: uiLang || 'hi' };
   }
 
-  // Fall back to the user's configured UI/voice language
+  // 5. Fall back to the user's configured UI/voice language
   const resolvedLocale = voiceLocale || 'en-IN';
   const resolvedLang = uiLang || (resolvedLocale.startsWith('en') ? 'en' : 'hi');
   return { lang: resolvedLang, locale: resolvedLocale, uiLang: resolvedLang };
@@ -935,6 +1002,19 @@ export function useAssistant(voiceLocale) {
     const currentPath = window.location.pathname;
     // Detect the user's active UI language from localStorage (set by LanguageContext)
     const storedUiLang = localStorage.getItem('krishi_ui_language') || 'hi';
+
+    // ── Step 0: Detect explicit language-switch commands FIRST ─────────────────
+    const langSwitch = detectLanguageSwitchIntent(transcript);
+    if (langSwitch) {
+      // Persist the AI conversation language
+      localStorage.setItem('krishi_ai_lang', langSwitch.lang);
+      const ack = langSwitch.ack;
+      setResponse(ack);
+      assistantVoice.speak(ack, langSwitch.locale);
+      setIsProcessing(false);
+      return;
+    }
+
     const { lang, locale, uiLang: detectedUiLang } = detectReplyMode(transcript, voiceLocale, storedUiLang);
     const effectiveUiLang = detectedUiLang || storedUiLang;
 
@@ -1030,8 +1110,9 @@ export function useAssistant(voiceLocale) {
         });
 
         if (guidance) {
-          const marketLabel = formatLocationLabel(guidance.bestMarket);
-          const isIndoAryan = ['hi', 'bh', 'mr', 'hi-en', 'pa'].includes(lang) || ['hi', 'bh', 'mr', 'hi-en', 'pa'].includes(effectiveUiLang);
+          // Determine reply language: English if lang=en, else Hindi/Indic
+          const isEnglish = lang === 'en' || effectiveUiLang === 'en';
+          const isIndoAryan = !isEnglish && ['hi', 'bh', 'mr', 'hi-en', 'pa'].includes(lang);
           
           let prefixHi = `आज ${cropIntent.cropHindi} का भाव`;
           let prefixEn = `Today's ${cropIntent.crop} price is`;
@@ -1053,14 +1134,14 @@ export function useAssistant(voiceLocale) {
              prefixEn = `In your state ${guidance.bestMarket.state}, today's ${cropIntent.crop} price is`;
           }
 
-          reply = isIndoAryan
-            ? `${prefixHi} ${guidance.marketPrice} रुपये प्रति ${guidance.unit} है (${guidance.bestMarket.mandi})।`
-            : `${prefixEn} ₹${guidance.marketPrice} per ${guidance.unit} at ${guidance.bestMarket.mandi}.`;
+          reply = isEnglish
+            ? `${prefixEn} ₹${guidance.marketPrice} per ${guidance.unit} at ${guidance.bestMarket.mandi}.`
+            : `${prefixHi} ${guidance.marketPrice} रुपये प्रति ${guidance.unit} है (${guidance.bestMarket.mandi})।`;
         } else {
-          const isIndoAryan = ['hi', 'bh', 'mr', 'hi-en', 'pa'].includes(lang) || ['hi', 'bh', 'mr', 'hi-en', 'pa'].includes(effectiveUiLang);
-          reply = isIndoAryan
-            ? `मैं ${cropIntent.cropHindi} के भाव और लिस्टिंग दिखा रही हूँ।`
-            : `Showing listings and prices for ${cropIntent.crop}.`;
+          const isEnglish = lang === 'en' || effectiveUiLang === 'en';
+          reply = isEnglish
+            ? `Showing listings and prices for ${cropIntent.crop}.`
+            : `मैं ${cropIntent.cropHindi} के भाव और लिस्टिंग दिखा रही हूँ।`;
         }
 
         action = () => navigate(`/search?crop=${encodeURIComponent(cropIntent.crop)}${locationHint?.district ? `&location=${encodeURIComponent(locationHint.district)}` : ''}`);
