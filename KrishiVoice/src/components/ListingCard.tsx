@@ -108,16 +108,10 @@ export default function ListingCard({ listing }: { listing: any }) {
           </div>
 
           {/* Price + Qty grid */}
-          <div
-            className="rounded-xl p-3 mb-3 grid grid-cols-2 gap-3"
-            style={{
-              background: 'linear-gradient(145deg, #f0fdf4, #dcfce7)',
-              boxShadow: 'inset 2px 2px 5px rgba(45,122,58,0.1), inset -1px -1px 3px rgba(255,255,255,0.8)',
-            }}
-          >
+          <div className="listing-card__stats rounded-xl p-3 mb-3 grid grid-cols-2 gap-3">
             <div>
               <p className="text-[9px] font-black text-green-600 uppercase tracking-widest mb-0.5">Quantity</p>
-              <p className="font-black text-gray-900 text-sm">
+              <p className="font-black text-sm" style={{ color: 'var(--text-primary, #111827)' }}>
                 {qty} <span className={`font-black text-[10px] px-1.5 py-0.5 rounded shadow-sm ${unit.toLowerCase().includes('quintal') || unit.toLowerCase().includes('क्विंटल') ? 'bg-amber-200 text-amber-900' : 'bg-gray-200 text-gray-800'}`}>{unit}</span>
               </p>
               <p className="text-[9px] text-gray-500 font-medium mt-1">मात्रा</p>

@@ -1370,27 +1370,28 @@ export default function VoiceButton({ onListingPublished }) {
             <div>
               <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Price / मूल्य (₹)</label>
               {showEdit ? (
-                <div className="flex gap-2 items-center">
-                  <span className="text-gray-500 font-bold">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    value={editPrice}
-                    onChange={e => {
-                      setEditPrice(e.target.value);
-                      setPriceApplyMessage('');
-                    }}
-                    className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-primary bg-gray-50"
-                    placeholder="e.g. 2000"
-                  />
-                  <span className="text-gray-400 text-xs">per</span>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex gap-2 items-center">
+                    <span className="text-gray-500 font-bold">&#8377;</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={editPrice}
+                      onChange={e => {
+                        setEditPrice(e.target.value);
+                        setPriceApplyMessage('');
+                      }}
+                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-primary bg-gray-50"
+                      placeholder="e.g. 2000"
+                    />
+                  </div>
                   <select
                     value={editPriceUnit}
                     onChange={e => {
                       setEditPriceUnit(e.target.value);
                       setPriceApplyMessage('');
                     }}
-                    className="border border-gray-200 rounded-xl px-2 py-2 text-sm font-semibold outline-none focus:border-primary bg-gray-50"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-primary bg-gray-50"
                   >
                     <option value="quintal">quintal</option>
                     <option value="kg">kg</option>

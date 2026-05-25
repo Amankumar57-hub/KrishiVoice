@@ -984,8 +984,11 @@ export function useAssistant(voiceLocale) {
   const { profile } = useAuthContext();
   const [response, setResponse] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  // Cancellation token — incremented each time the user closes the assistant
+  const cancelRef = useRef(0);
 
   const clearResponse = useCallback(() => {
+    cancelRef.current += 1; // invalidate any in-flight processIntent call
     setResponse('');
     setIsProcessing(false);
     assistantVoice.stop();
@@ -995,6 +998,10 @@ export function useAssistant(voiceLocale) {
     if (!transcript?.trim()) return;
 
     assistantVoice.stop();
+    cancelRef.current += 1; // cancel any previous in-flight request
+    const myToken = cancelRef.current; // snapshot this call's token
+    const isCancelled = () => cancelRef.current !== myToken;
+
     setIsProcessing(true);
     setResponse('');
 
@@ -1006,6 +1013,7 @@ export function useAssistant(voiceLocale) {
     // ── Step 0: Detect explicit language-switch commands FIRST ─────────────────
     const langSwitch = detectLanguageSwitchIntent(transcript);
     if (langSwitch) {
+      if (isCancelled()) return;
       // Persist the AI conversation language
       localStorage.setItem('krishi_ai_lang', langSwitch.lang);
       const ack = langSwitch.ack;
@@ -1100,6 +1108,7 @@ export function useAssistant(voiceLocale) {
 
       if (cropIntent) {
         const mandiRows = await fetchLatestMandiRows();
+        if (isCancelled()) return;
         const guidance = getMandiPriceGuidance({
           crop: cropIntent.crop,
           userPrice: 0,
@@ -1150,13 +1159,14 @@ export function useAssistant(voiceLocale) {
         action = () => navigate('/search');
       }
     }
-    // 3. Agriculture & general queries → Pollinations AI in user's language
     else {
       const userLocContext = profile?.address ? ` (Context: user is from ${profile.address}${profile?.state ? `, ${profile.state}` : ''}. Answer accordingly for their area.)` : '';
       reply = await askGemini(transcript + userLocContext, lang === 'hi', locale, effectiveUiLang);
+      if (isCancelled()) return;
       action = null;
     }
 
+    if (isCancelled()) return;
     setResponse(reply);
     assistantVoice.speak(reply, locale);
 
