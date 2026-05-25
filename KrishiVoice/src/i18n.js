@@ -1839,7 +1839,7 @@ const resources = {
   },
 };
 
-const initialLanguage = localStorage.getItem('krishi_language') || 'hi';
+const initialLanguage = localStorage.getItem('krishi_ui_language') || 'hi';
 
 i18n
   .use(LanguageDetector)
@@ -1849,17 +1849,26 @@ i18n
     lng: initialLanguage,
     fallbackLng: {
       'hi': ['bh', 'mr', 'pa', 'en'],
-      'bh': ['hi', 'mr', 'pa', 'en'],
+      'hi-en': ['hi', 'en'],
+      'bh': ['hi', 'en'],
+      'mag': ['hi', 'bh', 'en'],
+      'mai': ['hi', 'bh', 'en'],
       'ta': ['en'],
-      'mr': ['hi', 'bh', 'pa', 'en'],
-      'pa': ['hi', 'bh', 'mr', 'en'],
+      'mr': ['hi', 'en'],
+      'pa': ['hi', 'en'],
+      'te': ['hi', 'en'],
+      'kn': ['en'],
+      'ml': ['en'],
+      'bn': ['hi', 'en'],
+      'gu': ['hi', 'en'],
+      'or': ['hi', 'en'],
       'en': ['hi'],
-      default: ['en']
+      default: ['hi', 'en']
     },
-    supportedLngs: ['en', 'hi', 'bh', 'ta', 'mr', 'pa'],
+    supportedLngs: ['en', 'hi', 'hi-en', 'bh', 'mag', 'mai', 'ta', 'mr', 'pa', 'te', 'kn', 'ml', 'bn', 'gu', 'or'],
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
-      lookupLocalStorage: 'krishi_language',
+      lookupLocalStorage: 'krishi_ui_language',
       caches: ['localStorage'],
     },
     interpolation: {
