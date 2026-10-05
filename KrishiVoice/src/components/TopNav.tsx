@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTranslation } from 'react-i18next';
+import { findLocationHint } from '../utils/mandiInsights';
 
 export default function TopNav() {
   const { user, profile } = useAuthContext();
@@ -42,9 +43,14 @@ export default function TopNav() {
   // ── Mandi Price Notifications ──
   useEffect(() => {
     const role = profile?.role || 'farmer'; // default notify farmers
+    
+    // Determine user location for filtering
+    const addressText = `${profile?.address || ''} ${profile?.state || ''} ${profile?.location || ''}`.trim();
+    const userLocHint = findLocationHint(addressText);
 
     // Helper to create a price-change notification
-    const makePriceNotif = (cropName: string, cropHindi: string, newPrice: number, prevPrice: number) => {
+    const makePriceNotif = (row: any) => {
+      const { crop_name: cropName, crop_name_hindi: cropHindi, price_modal: newPrice, previous_price_modal: prevPrice, district, state, mandi_name: mandiName } = row;
       if (!prevPrice || !newPrice || prevPrice === newPrice) return null;
       const changeAmt = newPrice - prevPrice;
       const changePct = ((changeAmt / prevPrice) * 100).toFixed(1);
@@ -53,6 +59,17 @@ export default function TopNav() {
       // Farmers care about price UP (sell now), Buyers care about price DOWN (buy now)
       if (isUp && role !== 'farmer') return null;
       if (!isUp && role !== 'buyer') return null;
+      
+      // Filter by location if user has one set
+      if (userLocHint) {
+        const rowText = `${district || ''} ${state || ''} ${mandiName || ''}`.toLowerCase();
+        let match = false;
+        if (userLocHint.district && rowText.includes(userLocHint.district.toLowerCase())) match = true;
+        if (userLocHint.state && rowText.includes(userLocHint.state.toLowerCase())) match = true;
+        if (userLocHint.keywords?.some(k => rowText.includes(k.toLowerCase()))) match = true;
+        
+        if (!match) return null; // Skip if it's not their location
+      }
 
       return {
         id: `price-${cropName}-${Date.now()}`,
@@ -74,7 +91,7 @@ export default function TopNav() {
       
       const { data, error } = await supabase
         .from('mandi_prices')
-        .select('crop_name, price_modal, previous_price_modal, crop_name_hindi')
+        .select('crop_name, price_modal, previous_price_modal, crop_name_hindi, district, state, mandi_name')
         .in('crop_name', crops)
         .order('created_at', { ascending: false });
 
@@ -84,7 +101,7 @@ export default function TopNav() {
         data.forEach(row => {
           if (!uniqueCrops.has(row.crop_name)) {
             uniqueCrops.add(row.crop_name);
-            const n = makePriceNotif(row.crop_name, row.crop_name_hindi || '', row.price_modal, row.previous_price_modal);
+            const n = makePriceNotif(row);
             if (n) initial.push(n);
           }
         });
@@ -105,7 +122,7 @@ export default function TopNav() {
         { event: 'INSERT', schema: 'public', table: 'mandi_prices' },
         (payload) => {
           const row = payload.new as any;
-          const n = makePriceNotif(row.crop_name, row.crop_name_hindi || '', row.price_modal, row.previous_price_modal);
+          const n = makePriceNotif(row);
           if (n) {
             setNotifs(prev => [n, ...prev]);
             setUnreadCount(c => c + 1);

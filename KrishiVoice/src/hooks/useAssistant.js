@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { assistantVoice } from '../utils/assistantVoice';
 import { supabase } from '../supabaseClient';

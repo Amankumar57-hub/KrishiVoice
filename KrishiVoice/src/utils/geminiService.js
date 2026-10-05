@@ -142,20 +142,12 @@ function validatePollinationsResponse(raw) {
 
 async function askPollinationsModel(prompt, voiceLocale, uiLang, model) {
   const userMessage = buildUserMessage(prompt, voiceLocale, uiLang);
+  const sysContext = SYSTEM_CONTEXT;
+  
+  // Use GET request instead of POST to avoid CORS preflight and adblocker issues
+  const url = `https://text.pollinations.ai/prompt/${encodeURIComponent(userMessage)}?model=${model}&system=${encodeURIComponent(sysContext)}&seed=${Math.floor(Math.random() * 9999)}`;
 
-  const response = await fetch('https://text.pollinations.ai/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages: [
-        { role: 'system', content: SYSTEM_CONTEXT },
-        { role: 'user', content: userMessage }
-      ],
-      model,
-      seed: Math.floor(Math.random() * 9999), // Vary seed to avoid cached bad responses
-      private: true,
-    }),
-  });
+  const response = await fetch(url);
 
   if (!response.ok) {
     const errBody = await response.text().catch(() => '');
