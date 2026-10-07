@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuthContext } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import imageCompression from 'browser-image-compression';
 import toast from 'react-hot-toast';
 
@@ -24,6 +25,8 @@ export default function Transport() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
   const fileInputRef = useRef(null);
 
   const prefilledListing = location.state?.listing;
@@ -515,10 +518,10 @@ export default function Transport() {
                       calculateRealRoute(transporter);
                     }}
                     className="flex items-center gap-1.5 bg-violet-100 text-violet-700 py-2 px-4 rounded-xl text-xs font-bold hover:bg-violet-200 transition-colors border border-violet-200 shadow-sm"
-                    title="Calculate best route using AI"
+                    title={isHi ? 'AI का इस्तेमाल करके रास्ता ढूँढें' : 'Calculate best route using AI'}
                   >
                     <Route size={14} />
-                    AI Route
+                    {isHi ? 'AI रास्ता' : 'AI Route'}
                   </button>
 
                   {/* Edit & Delete for Owners */}
@@ -762,8 +765,8 @@ export default function Transport() {
                   <Brain size={20} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 leading-tight">AI Route Optimization</h2>
-                  <p className="text-xs text-gray-500 font-medium">सबसे छोटा और सस्ता रास्ता</p>
+                  <h2 className="text-lg font-bold text-gray-900 leading-tight">{isHi ? 'AI राउट ऑप्टिमाइजेशन' : 'AI Route Optimization'}</h2>
+                  <p className="text-xs text-gray-500 font-medium">{isHi ? 'सबसे छोटा और सस्ता रास्ता' : 'Shortest & most cost-effective path'}</p>
                 </div>
               </div>
               <button 
@@ -778,24 +781,24 @@ export default function Transport() {
                 {routeLoading ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-20 backdrop-blur-sm">
                     <Loader2 size={30} className="animate-spin text-violet-600 mb-2" />
-                    <p className="text-sm font-bold text-gray-700">Connecting to OSRM AI Routing...</p>
-                    <p className="text-xs text-gray-500">Calculating real path & distance</p>
+                    <p className="text-sm font-bold text-gray-700">{isHi ? 'OSRM AI राउटिंग से कनेक्ट हो रहा है...' : 'Connecting to OSRM AI Routing...'}</p>
+                    <p className="text-xs text-gray-500">{isHi ? 'असली रास्ता और दूरी निकाल रहे हैं' : 'Calculating real path & distance'}</p>
                   </div>
                 ) : null}
                 
                 <MapContainer center={mapCenter as [number, number]} zoom={10} style={{ height: '100%', width: '100%', zIndex: 10 }} zoomControl={false}>
                   <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; OpenStreetMap'
                   />
                   {routeCoordinates.length > 0 && (
                     <>
                       <Polyline positions={routeCoordinates} color="#4f46e5" weight={5} opacity={0.8} />
                       <Marker position={routeCoordinates[0]}>
-                        <Popup>Transporter: {routeTransporter?.name}</Popup>
+                        <Popup>{isHi ? 'ट्रांसपोर्टर:' : 'Transporter:'} {routeTransporter?.name}</Popup>
                       </Marker>
                       <Marker position={routeCoordinates[routeCoordinates.length - 1]}>
-                        <Popup>Your Farm</Popup>
+                        <Popup>{isHi ? 'आपका खेत' : 'Your Farm'}</Popup>
                       </Marker>
                     </>
                   )}
@@ -804,24 +807,24 @@ export default function Transport() {
               
               <div className="space-y-3">
                 <div className="flex justify-between items-center bg-emerald-50 p-3.5 rounded-xl border border-emerald-100 shadow-sm">
-                  <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5"><MapPin size={16} className="text-emerald-600" /> True Distance & Time:</span>
+                  <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5"><MapPin size={16} className="text-emerald-600" /> {isHi ? 'असली दूरी और समय:' : 'True Distance & Time:'}</span>
                   <span className="font-black text-emerald-700 text-lg">{routeStats.distance} km • {routeStats.durationText}</span>
                 </div>
                 <div className="flex justify-between items-center bg-violet-50 p-3.5 rounded-xl border border-violet-100 shadow-sm">
-                  <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5"><TrendingUp size={16} className="text-violet-600" /> Fuel Saved (AI Path):</span>
+                  <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5"><TrendingUp size={16} className="text-violet-600" /> {isHi ? 'ईंधन की बचत (AI रास्ता):' : 'Fuel Saved (AI Path):'}</span>
                   <span className="font-black text-violet-700 text-lg">~{routeStats.fuelSaved} L</span>
                 </div>
               </div>
               
               <button 
                 onClick={() => {
-                  toast.success('Route confirmed! Real map link sent to Transporter via WhatsApp.');
+                  toast.success(isHi ? 'रास्ता कन्फर्म हो गया! लिंक WhatsApp पर भेज दिया गया।' : 'Route confirmed! Real map link sent to Transporter via WhatsApp.');
                   setShowRouteModal(false);
                 }}
                 className="w-full mt-6 bg-violet-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-violet-200 hover:bg-violet-700 active:scale-95 transition-all flex justify-center items-center gap-2"
               >
                 <CheckCircle size={18} />
-                Confirm Real Route & Share
+                {isHi ? 'रास्ता कन्फर्म करें और शेयर करें' : 'Confirm Real Route & Share'}
               </button>
             </div>
           </div>

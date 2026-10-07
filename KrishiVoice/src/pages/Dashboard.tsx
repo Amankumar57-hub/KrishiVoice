@@ -3,12 +3,15 @@ import VoiceButton from '../components/VoiceButton';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuthContext } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import imageCompression from 'browser-image-compression';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function Dashboard() {
   const { user, profile } = useAuthContext();
+  const { i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
   const navigate = useNavigate();
   const location = useLocation();
   const [tab, setTab] = useState('farmer');
@@ -460,13 +463,17 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-bold text-violet-900 flex items-center gap-2 text-base">
-                    AI Demand Forecast 
+                    {isHi ? 'मांग की भविष्यवाणी' : 'AI Demand Forecast'}
                     <span className="bg-violet-600 text-white text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold shadow-sm">Beta</span>
                   </h3>
-                  <p className="text-xs text-violet-700 font-medium mt-0.5">मांग की भविष्यवाणी (AI आधारित)</p>
+                  <p className="text-xs text-violet-700 font-medium mt-0.5">{isHi ? 'एआई आधारित (AI Powered)' : 'AI Powered Prediction'}</p>
                   <div className="mt-3 bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-violet-200/60 inline-block w-full">
                     <p className="text-sm text-gray-800 leading-relaxed">
-                      <strong>Wheat (गेहूं):</strong> High demand expected next week. Prices may rise by <span className="text-green-600 font-bold">+5%</span> to <span className="text-green-600 font-bold">+8%</span> in your region.
+                      {isHi ? (
+                        <><strong>गेहूं:</strong> अगले हफ्ते भारी मांग की उम्मीद है। आपके इलाके में कीमतें <span className="text-green-600 font-bold">+5%</span> से <span className="text-green-600 font-bold">+8%</span> तक बढ़ सकती हैं।</>
+                      ) : (
+                        <><strong>Wheat:</strong> High demand expected next week. Prices may rise by <span className="text-green-600 font-bold">+5%</span> to <span className="text-green-600 font-bold">+8%</span> in your region.</>
+                      )}
                     </p>
                   </div>
                 </div>
