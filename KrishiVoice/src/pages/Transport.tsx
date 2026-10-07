@@ -38,8 +38,8 @@ export default function Transport() {
   
   // Real Map States
   const [routeCoordinates, setRouteCoordinates] = useState([]);
-  const [routeStats, setRouteStats] = useState({ distance: 0, durationText: '', fuelSaved: 0 });
-  const [mapCenter, setMapCenter] = useState([23.2599, 77.4126]);
+  const [routeStats, setRouteStats] = useState({ distance: '0', durationText: '', fuelSaved: '0' });
+  const [mapCenter, setMapCenter] = useState<[number, number]>([23.2599, 77.4126]);
   const [routeLoading, setRouteLoading] = useState(false);
 
   const [formData, setFormData] = useState({ name: '', phone: '', whatsapp: '', email: '', vehicle: '', region: '', address: '' });
@@ -195,7 +195,7 @@ export default function Transport() {
         setRouteStats({
           distance: distanceKm,
           durationText: hours > 0 ? `${hours}h ${mins}m` : `${mins}m`,
-          fuelSaved: (distanceKm * 0.12).toFixed(1)
+          fuelSaved: (parseFloat(distanceKm) * 0.12).toFixed(1)
         });
       }
     } catch (err) {
@@ -783,7 +783,7 @@ export default function Transport() {
                   </div>
                 ) : null}
                 
-                <MapContainer center={mapCenter} zoom={10} style={{ height: '100%', width: '100%', zIndex: 10 }} zoomControl={false}>
+                <MapContainer center={mapCenter as [number, number]} zoom={10} style={{ height: '100%', width: '100%', zIndex: 10 }} zoomControl={false}>
                   <TileLayer
                     url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                     attribution='&copy; OpenStreetMap'
